@@ -9,6 +9,13 @@ from datetime import datetime
 
 app = FastAPI()
 
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+async def read_root():
+    return {"message": "Hello, World!"}
 OUTPUT_FOLDER = ".cache"
 if not os.path.exists(OUTPUT_FOLDER):
     os.makedirs(OUTPUT_FOLDER)
