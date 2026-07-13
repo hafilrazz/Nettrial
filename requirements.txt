@@ -1,4 +1,6 @@
 fastapi
 email-validator
+httpx
+python-multipart
 uvicorn
 requests
