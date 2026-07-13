@@ -211,6 +211,7 @@ def send_trial_offer(email, cookie_string):
                     {"name": "pipcConsent", "value": {"booleanValue": False}}
                 ]
             },
+        }
             "extensions": {
                 "persistedQuery": {
                     "id": "0fd81de7-07af-4c7d-802f-0f4ea4181aa3",
