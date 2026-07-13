@@ -1,7 +1,13 @@
 from flask import Flask, request
+from NetflixTrial import get_cookies, build_cookie_string, send_trial_offer
 
 app = Flask(__name__)
-
+@app.route("/")
+def home():
+    return {
+        "status": "online",
+        "message": "Server is running"
+    }
 @app.route("/send", methods=["POST"])
 def send():
     email = request.json["email"]
