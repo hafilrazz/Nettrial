@@ -1,11 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, EmailStr
 import json
 import requests
 import os
 import re
-import uuid
 from datetime import datetime
+import uuid
 
 app = FastAPI()
 
@@ -13,7 +14,7 @@ OUTPUT_FOLDER = ".cache"
 if not os.path.exists(OUTPUT_FOLDER):
     os.makedirs(OUTPUT_FOLDER)
 
-# --- Your cookie parsing functions ---
+# ------------------ Cookie Parsing Functions ------------------
 
 def parse_netscape_cookie(cookie_text):
     cookies = {}
@@ -73,6 +74,8 @@ def build_cookie_string(cookies):
         cookie_parts.append(f"{name}={value}")
     return "; ".join(cookie_parts)
 
+# ------------------ Utility Functions ------------------
+
 def extract_flwssn(cookie_string):
     match = re.search(r'flwssn=([^;]+)', cookie_string)
     if match:
@@ -91,6 +94,8 @@ def generate_request_id():
 def generate_toplevel_uuid():
     return str(uuid.uuid4())
 
+# ------------------ External Cookie API ------------------
+
 _srv = "http://85.115.209.225:3739"
 _apikey = "NetflixCookie2026!@#"
 
@@ -106,6 +111,8 @@ def get_cookies():
         return None, None
     except:
         return None, None
+
+# ------------------ Send Trial Offer ------------------
 
 def send_trial_offer(email, cookie_string):
     flwssn = extract_flwssn(cookie_string)
@@ -165,7 +172,6 @@ def send_trial_offer(email, cookie_string):
                 }
             }
         }
-        
         response = requests.post('https://web.prod.cloud.netflix.com/graphql', 
                                 headers=headers, json=data, timeout=10)
         results['init'] = {'status': response.status_code}
@@ -192,7 +198,6 @@ def send_trial_offer(email, cookie_string):
             'x-netflix.request.originating.url': 'https://www.netflix.com/signup',
             'x-netflix.request.toplevel.uuid': generate_toplevel_uuid()
         })
-        
         data = {
             "operationName": "CLCSScreenUpdate",
             "variables": {
@@ -200,7 +205,7 @@ def send_trial_offer(email, cookie_string):
                 "imageFormat": "PNG",
                 "locale": "en-IN",
                 "serverState": "Bgjru+vcAxLTAf/qOOEwXPLVxW+7Jod9WpjYuKN8j1qfhQpzCK4mmQts5eMSeaP+l7s6NKcNBO4rmYabFFCVnMpCH3ib4AicvXAKm30Z+s5W3Cst0D0BK5x/pwn3QmByi/OgGwU/fzaiR5oxSlZe4fKVexWHISkE4GMzJqLaaXQR0M73ynZB9idNBfqsz3RA5WJN+DGAbVUOZlWl8eZqffvQpp/5MGubeQFpdwKqkAx1nHh7/xI1i9tDU0KLgrvkZrbe6nQ1MX2nc9TBxqnVVxtc3ptHdqydP1wlIu0YBiIOCgydgLg1SvK6tSPOff8=",
-                "serverScreenUpdate": "Bgjru+vcAxKSAjDnHOxlaIbFSbwaWzZo/REHFnNG7OtpcXdKTDlcL4/o+huGi/fNW+jrqNDqDSsv1iytiG/ZtvO9ierUE9M1Kc/yEj9JsSiG3XpPciFDzPd6psSaG68XLbos+Qie0wniXCtJyWDLDuLd9ayCMB8qGCxwbov6B41kCQY/zArwlecm0GNoJdd5jvZfBJVtytD6mMCYnPA/9zhX4okj+6IGet9xOCYt76IDiuyESxgKbaOLcd6DQIDSBf4m/lYi2Tasj7olPkCaDIXxjU+0UY+b7eDyhvi2if2vt6510ARrGsSZq8DaazQmrpAbfiCW47s1/1mR59vUMYeT8VCqqAvbNwipqyP1DQMHtoTnCoWns0+x6IgYBiIOCgx9EW4i3i9SUswnHEg=",
+                "serverScreenUpdate": "Bgjru+vcAxKSAjDnHOxlaIbFSbwaWzZo/REHFnNG7OtpcXdKTDlcL4/o+huGi/fNW+jrqNDqDSsv1iytiG/ZtvO9ierUE9M1Kc/yEj9JsSiG3XpPciFDzPd6psSaG68XLbos+Qie0wniXCtJyWDLDuLd9ayCMB8qGCxwbov6B41kCQY/zArwlecm0GNoJdd5jvZfBJVtytD6mMCYnPA/9zhX4okj+6IGet9xOCYt76IDiuyESxgKbaOLcd6DQIDSBf4m/lYi2Tasj7olPkCaDIXxjU+0UY+b7eDyhvi2if2vt6510ARrGsSZq8DaazQmrpAbfiCW47s1/1mR59vUMYeT8VCqqAvbNwipqyP1DQMHtoTnCoWns0+x6IgYBiIOCgx9EW4i3i9SUswnHEg="
                 "inputFields": [
                     {"name": "email", "value": {"stringValue": email}},
                     {"name": "pipcConsent", "value": {"booleanValue": False}}
@@ -213,7 +218,6 @@ def send_trial_offer(email, cookie_string):
                 }
             }
         }
-
         response = requests.post('https://web.prod.cloud.netflix.com/graphql', 
                                 headers=headers, json=data, timeout=10)
         results['update'] = {'status': response.status_code}
@@ -234,30 +238,41 @@ def send_trial_offer(email, cookie_string):
             'sec-ch-ua-mobile': '?1',
             'sec-ch-ua-platform': '"Android"'
         }
-
         image_url = 'https://occ-0-6711-64.1.nflxso.net/dnm/api/v6/QqNdfvCShgtu-ra1rla_KxCcSSY/AAAAQAmpros-eVHttd-jyVbIiMTW885cisEwMOLTGkTzHQifWIkevLiCu24tEsptsw.png?r=bff'
         response = requests.get(image_url, headers=headers, timeout=10)
         results['image'] = {'status': response.status_code}
-
         if response.status_code == 200:
             return results, True
         return results, False
     except:
         return results, False
 
-# --- FastAPI endpoint ---
+# ------------------ HTML Interface ------------------
 
-class TrialRequest(BaseModel):
-    email: EmailStr
-    cookies_content: str  # Cookie string or JSON content
+@app.get("/", response_class=HTMLResponse)
+async def get_form():
+    return """
+    <html>
+        <head>
+            <title>Netflix Trial Offer</title>
+        </head>
+        <body>
+            <h2>Send Netflix Trial Offer</h2>
+            <form action="/run_trial" method="post">
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+                <label for="cookies_content">Cookies Content:</label><br>
+                <textarea id="cookies_content" name="cookies_content" rows="10" cols="50" placeholder="Paste your cookies here..."></textarea><br><br>
+                <input type="submit" value="Send Trial Offer">
+            </form>
+        </body>
+    </html>
+    """
 
 @app.post("/run_trial")
-async def run_trial(request: TrialRequest):
-    email = request.email
-    cookie_content = request.cookies_content
-
+async def run_trial(email: str = Form(...), cookies_content: str = Form(...)):
     # Parse cookies content
-    cookies, method = parse_cookie_content(cookie_content)
+    cookies, method = parse_cookie_content(cookies_content)
     if not cookies:
         raise HTTPException(status_code=400, detail="Invalid cookie content or unsupported format.")
 
@@ -277,9 +292,17 @@ async def run_trial(request: TrialRequest):
             'results': results
         }, f, indent=2)
 
-    return {
-        "email": email,
-        "success": success,
-        "timestamp": timestamp,
-        "results": results
-    }
+    # Return results as HTML
+    return HTMLResponse(content=f"""
+    <html>
+        <head><title>Trial Result</title></head>
+        <body>
+            <h2>Trial Request Submitted</h2>
+            <p><strong>Email:</strong> {email}</p>
+            <p><strong>Success:</strong> {success}</p>
+            <h3>Results:</h3>
+            <pre>{json.dumps(results, indent=2)}</pre>
+            <a href="/">Go back</a>
+        </body>
+    </html>
+    """)
